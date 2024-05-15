@@ -1,0 +1,117 @@
+name: Catintell_model_test2
+model_type: CatDualModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 114514
+
+# dataset and data loader settings
+datasets:
+  test:
+    name: Catintell
+    type: ImgCataDataset
+    image_folder: datasets/catintell_dataset
+    csv_path: experiments/Catinetll_ex3/models/0_test.csv
+    # image_folder: catintell_generate_dataset
+    # csv_path: catintell_generate_dataset/catintell_generate_test.csv
+   
+    flip: false
+    crop: false
+    image_size: !!int 768
+    resize: true
+    fine_size: 768
+    min_multiplier: 16
+    # mean: [0.485, 0.456, 0.406]
+    # std: [0.229, 0.224, 0.225]
+
+
+# network structures
+network_g_A:
+  type: CatintellConv_D5
+  dim: 16
+  stage: 4
+  neck_blocks: 1
+  layer_scale_init_value: !!float 1e-5
+  use_bias: True
+
+network_d_A:
+  type: SwinTransformer
+  img_size: 256
+  patch_size: 4
+  in_chans: 3
+  num_classes: 1 #
+  embed_dim: 64
+  depths: [2, 2, 6, 2]
+  num_heads: [2, 4, 8, 16]
+  window_size: 8 # windows here
+  mlp_ratio: 4.
+  qkv_bias: True
+  drop_rate: 0.
+  attn_drop_rate: 0.
+  drop_path_rate: 0.1
+  ape: False
+  patch_norm: True
+  use_checkpoint: False
+  sigmoid: False
+
+
+
+network_g_B:
+  type: CatintellConv_D5
+  dim: 32
+  stage: 4
+  neck_blocks: 1
+  layer_scale_init_value: !!float 1e-5
+  use_bias: True
+# network_d:
+#   type: ConvNeXt
+#   num_classes: 1
+#   depths: [3,3, 9, 3]
+#   dims: [96, 192, 384, 768]
+#   drop_path_rate: 0.1
+
+  
+network_d_B:
+  type: SwinTransformer
+  img_size: 256
+  patch_size: 4
+  in_chans: 3
+  num_classes: 1 #
+  embed_dim: 64
+  depths: [2, 2, 6, 2]
+  num_heads: [2, 4, 8, 16]
+  window_size: 8 # windows here
+  mlp_ratio: 4.
+  qkv_bias: True
+  drop_rate: 0.
+  attn_drop_rate: 0.
+  drop_path_rate: 0.1
+  ape: False
+  patch_norm: True
+  use_checkpoint: False
+  sigmoid: False
+
+# path
+
+path:
+  pretrain_net_g_A: experiments/Catinetll_ex3/models/0_net_g_a_60000.pth
+  pretrain_net_d_A: 
+  pretrain_net_g_B: experiments/Catinetll_ex3/models/0_net_g_b_60000.pth
+  pretrain_net_d_B: 
+  strict_load_g: true
+  resume_state: ~
+
+# path
+
+
+# validation settings
+val:
+  use_pbar: true
+  save_img: true
+  suffix: restore  # add suffix to saved images, if None, use exp name
+
+  # metrics:
+  #   psnr: # metric name, can be arbitrary
+  #     type: calculate_psnr
+  #     crop_border: 4
+  #   ssim:
+  #     type: calculate_ssim
+  #     crop_border: 4

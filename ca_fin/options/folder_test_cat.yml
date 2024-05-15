@@ -1,0 +1,73 @@
+name: Catintell_folder_dummy
+model_type: CatTestModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 114514
+
+# dataset and data loader settings
+datasets:
+  test_1:
+    name: kaggle
+    type: ImgTestDataset
+    image_folder: datasets/external_dataset/kaggle
+   
+    flip: false
+    crop: false
+    image_size: !!int 768
+    resize: true
+    fine_size: 768
+    min_multiplier: 16
+  test_2:
+    name: odir
+    type: ImgTestDataset
+    image_folder: datasets/external_dataset/odir
+   
+    flip: false
+    crop: false
+    image_size: !!int 768
+    resize: true
+    fine_size: 768
+    min_multiplier: 16
+  # test_2:
+  #   name: catintell
+  #   type: ImgTestDataset
+  #   image_folder: datasets/catintell_real_test
+   
+  #   flip: false
+  #   crop: false
+  #   image_size: !!int 768
+  #   resize: true
+  #   fine_size: 768
+  #   min_multiplier: 16
+    
+
+
+# network structures
+network_g_A:
+  type: CatintellConv_D5
+  dim: 32
+  stage: 4
+  neck_blocks: 1
+  layer_scale_init_value: !!float 1e-5
+  use_bias: False
+
+# path
+
+path:
+  pretrain_net_g_A: experiments/legacy3/Catinetll_Final_ex1(Nobias-longterm)（best！！）/models/0_net_g_100000.pth
+  strict_load_g: true
+  resume_state: ~
+
+# path
+# validation settings
+val:
+  use_pbar: true
+  save_img: true
+  suffix: restore  # add suffix to saved images, if None, use exp name
+
+  # metrics:
+  #   psnr: # metric name, can be arbitrary
+  #     type: calculate_psnr
+  #     crop_border: 4
+  #   ssim:
+  #     type: calculate_ssim
+  #     crop_border: 4

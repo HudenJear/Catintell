@@ -1,0 +1,177 @@
+# general settings
+name: Catintell_G5_ex2(normal class loss)
+model_type: GenerateModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+# manual_seed: 114514
+multitrain: true
+round: 1
+dataset_random_fetch: true
+random_fetch_path: /data/huden/CATINTELL/catintell_image_dataset/catintell_image_pair_all.csv
+val_ratio: 0.1
+# if dataset_random_fetch is on, the csv_path would be disbaled in the train and val phase.
+# a new csv would be created and saved in the models folder
+
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: Catintell
+    type: ImagePairReverseDataset
+    image_folder: /data/huden/CATINTELL/catintell_image_dataset
+    csv_path: /data/huden/CATINTELL/catintell_image_dataset/catintell_image_pair_all.csv
+
+
+    
+    flip: true
+    crop: true
+    image_size: !!int 256
+    resize: true
+    fine_size: 1024
+    augment_ratio: 10
+    # mean: [0.485, 0.456, 0.406]
+    # std: [0.229, 0.224, 0.225]
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 8
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: testCatintell
+    type: ImagePairReverseDataset
+    image_folder: /data/huden/CATINTELL/catintell_image_dataset
+    csv_path: /data/huden/CATINTELL/catintell_image_dataset/catintell_image_pair_all.csv
+
+
+    flip: false
+    crop: false
+    image_size: !!int 512
+    resize: true
+    fine_size: 1024
+    augment_ratio: 1
+    # mean: [0.485, 0.456, 0.406]
+    # std: [0.229, 0.224, 0.225]
+
+# network structures
+network_g:
+  type: Catintell_G5
+  dim: 32
+  stage: 4
+  label_expanding: 2
+  neck_blocks: 4
+  layer_scale_init_value: !!float 1e-5
+  use_bias: False
+  
+network_d:
+  type: SwinTransformer
+  img_size: 256
+  patch_size: 4
+  in_chans: 3
+  num_classes: 1 #
+  embed_dim: 64
+  depths: [2, 2, 6, 2]
+  num_heads: [2, 4, 8, 16]
+  window_size: 8 # windows here
+  mlp_ratio: 4.
+  qkv_bias: True
+  drop_rate: 0.
+  attn_drop_rate: 0.
+  drop_path_rate: 0.1
+  ape: False
+  patch_norm: True
+  use_checkpoint: False
+  sigmoid: False
+
+
+path:
+  pretrain_network_g:
+  pretrain_network_d:
+  strict_load_g: false
+  resume_state: ~
+
+# training settings
+train:
+  ema_decay: 0.99
+  optim_g:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+  optim_d:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+  
+  scheduler:
+    type: MultiStepLR
+    milestones: [5000, 10000, 20000, 50000]
+    gamma: 0.5
+
+  total_iter: 100000
+  warmup_iter: 100  # no warm up
+
+  # losses
+  pixel_opt:
+    type: SmoothL1Loss
+    loss_weight: !!float 1e-1 # 5->1
+    reduction: mean
+  perceptual_opt:
+    type: FundusPerceptualLoss
+    layer_weights:
+      'conv5_4': 1
+    vgg_type: vgg19
+    use_input_norm: true
+    range_norm: false
+    perceptual_weight: !!float 1e-2
+    style_weight: !!float 1e-6 # 0->5e-4
+    criterion: l1
+    # loss_weight: 1e-2
+  gan_opt:
+    type: GANLoss
+    gan_type: vanilla
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: !!float 1e-2
+  cat_opt:
+    type: FundusClassLoss
+    resize: True
+    criterion: 'ce'
+    loss_weight: !!float 1e-4
+
+
+  net_d_iters: 1   # train net_g ever xxxx round
+  net_g_init_iters: 1000  # train net_g from xxxx round
+
+# validation settings
+val:
+  val_freq: !!float 5000
+  save_img: true
+  use_pbar: false
+
+  metrics:
+    
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      input_order: HWC
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      input_order: HWC
+
+
+
+
+# logging settings
+logger:
+  print_freq: 1000
+  save_checkpoint_freq: !!float 5000
+  save_best: False
+
+# dist training settings
+# dist_params:
+#   backend: nccl
+#   port: 29500

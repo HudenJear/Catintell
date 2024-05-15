@@ -1,0 +1,72 @@
+name: Catintell_dehaze_test_rrdb(paired data)
+model_type: DehazeModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 114514
+
+# dataset and data loader settings
+datasets:
+  test:
+    name: Catintelltest
+    type: SingleImageDataset
+    # image_folder: /data/huden/CATINTELL/catintell_real_test
+    # csv_path: /data/huden/CATINTELL/catintell_real_test/catintell_test_all.csv
+    image_folder: catintell_generate_dataset
+    csv_path: catintell_generate_dataset/catintell_generate_test.csv
+   
+    flip: false
+    crop: false
+    image_size: !!int 256
+    resize: false
+    fine_size: 640
+    min_multiplier: 16
+    augment_ratio: 1
+    # mean: [0.485, 0.456, 0.406]
+    # std: [0.229, 0.224, 0.225]
+
+# network structures
+network_g:
+  type: RRDBNet
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 64
+  num_block: 23
+  
+network_d:
+  type: SwinTransformer
+  img_size: 256
+  patch_size: 4
+  in_chans: 3
+  num_classes: 1 #
+  embed_dim: 64
+  depths: [2, 4, 6, 2]
+  num_heads: [2, 4, 8, 16]
+  window_size: 8 # windows here
+  mlp_ratio: 4.
+  qkv_bias: True
+  drop_rate: 0.
+  attn_drop_rate: 0.
+  drop_path_rate: 0.1
+  ape: False
+  patch_norm: True
+  use_checkpoint: False
+  sigmoid: False
+
+# path
+path:
+  pretrain_network_g: experiments/legacy/RRDB_dehaze_ex1/models/0_net_g_60000.pth
+  pretrain_network_d: 
+  strict_load: True
+  resume_state: ~
+
+# validation settings
+val:
+  save_img: true
+  suffix: restore  # add suffix to saved images, if None, use exp name
+
+  # metrics:
+  #   psnr: # metric name, can be arbitrary
+  #     type: calculate_psnr
+  #     crop_border: 4
+  #   ssim:
+  #     type: calculate_ssim
+  #     crop_border: 4

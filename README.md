@@ -7,4 +7,4 @@ For now, the Catintell project provides inference codes and all of the model fil
 ```
 pip install -r requirement.txt
 ```
-Then, download the pretrained weights for model: [googledrive](https://drive.google.com/file/d/14fVDHBoSjkv30ZB5GiAWXqcunIdLWd5v/view?usp=drive_link)
+Then, download the pretrained weights for model: [googledrive](https://drive.google.com/file/d/14fVDHBoSjkv30ZB5GiAWXqcunIdLWd5v/view?usp=drive_link) and save it under the ```pretrained``` file

@@ -4,7 +4,6 @@ The deployment of  'Universal Cataract Fundus Image Restoration Model Learning f
 ## Usage
 
 For now, the Catintell project provides inference codes and all of the model files. To use this model, please install the dependency with the following command.
-'''
+```
 pip install -r requirement.txt
-'''
-
+```
